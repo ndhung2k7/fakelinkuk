@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ShortLink</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-link"></i>
+                <span>ShortLink</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="/">Home</a>
+                <a href="/dashboard.html" class="active">Dashboard</a>
+                <a href="#" id="adminLink" style="display: none;">Admin</a>
+            </div>
+            <div class="nav-user" id="navUser" style="display: none;">
+                <span id="userName"></span>
+                <button class="btn btn-outline" onclick="logout()">Logout</button>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <main class="main-content">
+        <div class="container dashboard">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <h1>My Dashboard</h1>
+                <button class="btn btn-primary" onclick="window.location.href='/#shortener'">
+                    <i class="fas fa-plus"></i>
+                    Create New Link
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card animate-on-scroll">
+                    <i class="fas fa-link"></i>
+                    <div class="stat-value" id="totalUrls">0</div>
+                    <div class="stat-label">Total Links</div>
+                </div>
+                
+                <div class="stat-card animate-on-scroll">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="stat-value" id="totalClicks">0</div>
+                    <div class="stat-label">Total Clicks</div>
+                </div>
+                
+                <div class="stat-card animate-on-scroll">
+                    <i class="fas fa-clock"></i>
+                    <div class="stat-value" id="avgClicks">0</div>
+                    <div class="stat-label">Avg Clicks/Link</div>
+                </div>
+                
+                <div class="stat-card animate-on-scroll">
+                    <i class="fas fa-calendar"></i>
+                    <div class="stat-value" id="activeLinks">0</div>
+                    <div class="stat-label">Active Links</div>
+                </div>
+            </div>
+
+            <!-- Analytics Charts -->
+            <div class="analytics-grid">
+                <div class="chart-card">
+                    <h3>Clicks Over Time</h3>
+                    <div class="chart-container">
+                        <canvas id="clicksChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="stats-list">
+                    <h3>Quick Stats</h3>
+                    <div class="stat-item">
+                        <span class="stat-name">Today's Clicks</span>
+                        <span class="stat-count" id="todayClicks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-name">This Week</span>
+                        <span class="stat-count" id="weekClicks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-name">This Month</span>
+                        <span class="stat-count" id="monthClicks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-name">Top Country</span>
+                        <span class="stat-count" id="topCountry">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-name">Top Device</span>
+                        <span class="stat-count" id="topDevice">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- URLs Table -->
+            <div class="table-container">
+                <table id="urlsTable">
+                    <thead>
+                        <tr>
+                            <th>Short URL</th>
+                            <th>Original URL</th>
+                            <th>Clicks</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="urlsTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit URL Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Link</h2>
+                <button class="close-btn" onclick="closeModal('editModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="form-group">
+                        <label for="editUrl">Destination URL</label>
+                        <input type="url" id="editUrl" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editExpires">Expiration Date</label>
+                        <input type="datetime-local" id="editExpires" class="form-input">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div id="analyticsModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2>Link Analytics</h2>
+                <button class="close-btn" onclick="closeModal('analyticsModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="analytics-detail">
+                    <div class="detail-stats">
+                        <div class="stat-card small">
+                            <span class="stat-label">Total Clicks</span>
+                            <span class="stat-value" id="detailTotalClicks">0</span>
+                        </div>
+                        <div class="stat-card small">
+                            <span class="stat-label">Unique IPs</span>
+                            <span class="stat-value" id="detailUniqueIPs">0</span>
+                        </div>
+                        <div class="stat-card small">
+                            <span class="stat-label">Countries</span>
+                            <span class="stat-value" id="detailCountries">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container small">
+                        <canvas id="countryChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container small">
+                        <canvas id="deviceChart"></canvas>
+                    </div>
+                    
+                    <h3>Recent Clicks</h3>
+                    <div class="recent-clicks" id="recentClicks">
+                        <!-- Recent clicks will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>
