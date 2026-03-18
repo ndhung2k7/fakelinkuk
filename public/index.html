@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShortLink - Professional URL Shortener</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-link"></i>
+                <span>ShortLink</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="/" class="active">Home</a>
+                <a href="/dashboard.html">Dashboard</a>
+                <a href="#" id="adminLink" style="display: none;">Admin</a>
+            </div>
+            <div class="nav-auth" id="navAuth">
+                <button class="btn btn-outline" onclick="window.location.href='/login.html'">Login</button>
+                <button class="btn btn-primary" onclick="window.location.href='/register.html'">Sign Up</button>
+            </div>
+            <div class="nav-user" id="navUser" style="display: none;">
+                <span id="userName"></span>
+                <button class="btn btn-outline" onclick="logout()">Logout</button>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content animate-fade-in">
+                <h1 class="hero-title">Shorten Your URLs</h1>
+                <p class="hero-subtitle">Fast, secure and reliable URL shortener with advanced analytics</p>
+            </div>
+        </section>
+
+        <!-- URL Shortener Form -->
+        <section class="shortener-section">
+            <div class="container">
+                <div class="shortener-card animate-slide-up">
+                    <form id="shortenForm">
+                        <div class="input-group">
+                            <input type="url" 
+                                   id="urlInput" 
+                                   class="url-input" 
+                                   placeholder="Enter your long URL here..." 
+                                   required>
+                            <button type="submit" class="btn btn-primary btn-large" id="shortenBtn">
+                                <i class="fas fa-cut"></i>
+                                Shorten URL
+                            </button>
+                        </div>
+                        
+                        <!-- Advanced Options -->
+                        <div class="advanced-options">
+                            <button type="button" class="btn-options" id="toggleOptions">
+                                <i class="fas fa-cog"></i>
+                                Advanced Options
+                            </button>
+                            
+                            <div class="options-panel" id="optionsPanel" style="display: none;">
+                                <div class="options-grid">
+                                    <div class="option-item">
+                                        <label for="customCode">Custom Alias (optional)</label>
+                                        <div class="custom-url-preview">
+                                            <span>https://domain.com/</span>
+                                            <input type="text" 
+                                                   id="customCode" 
+                                                   placeholder="custom-name"
+                                                   pattern="[a-zA-Z0-9]+"
+                                                   maxlength="8">
+                                        </div>
+                                        <small>Only letters and numbers, 4-8 characters</small>
+                                    </div>
+                                    
+                                    <div class="option-item">
+                                        <label for="expiresIn">Link Expiration</label>
+                                        <select id="expiresIn">
+                                            <option value="never">Never expires</option>
+                                            <option value="1h">1 hour</option>
+                                            <option value="24h">24 hours</option>
+                                            <option value="7d">7 days</option>
+                                            <option value="30d">30 days</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Result Section -->
+                    <div class="result-section" id="resultSection" style="display: none;">
+                        <div class="result-header">
+                            <i class="fas fa-check-circle"></i>
+                            <h3>Your shortened URL is ready!</h3>
+                        </div>
+                        <div class="result-url">
+                            <input type="text" id="shortUrl" readonly>
+                            <button class="btn btn-primary copy-btn" id="copyBtn">
+                                <i class="fas fa-copy"></i>
+                                Copy
+                            </button>
+                        </div>
+                        <div class="result-actions">
+                            <a href="#" id="visitLink" target="_blank" class="btn btn-outline">
+                                <i class="fas fa-external-link-alt"></i>
+                                Visit
+                            </a>
+                            <button class="btn btn-outline" id="createAnother">
+                                <i class="fas fa-plus"></i>
+                                Create Another
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <div class="container">
+                <h2 class="section-title">Why Choose ShortLink?</h2>
+                <div class="features-grid">
+                    <div class="feature-card animate-on-scroll">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>Lightning Fast</h3>
+                        <p>Instant redirects with 99.9% uptime guarantee</p>
+                    </div>
+                    
+                    <div class="feature-card animate-on-scroll">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Detailed Analytics</h3>
+                        <p>Track clicks, locations, devices and more</p>
+                    </div>
+                    
+                    <div class="feature-card animate-on-scroll">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Secure & Safe</h3>
+                        <p>Link validation and blacklist protection</p>
+                    </div>
+                    
+                    <div class="feature-card animate-on-scroll">
+                        <div class="feature-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3>Custom Links</h3>
+                        <p>Create branded, memorable short links</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ShortLink</h3>
+                    <p>Professional URL shortener with powerful features</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links</h4>
+                    <a href="/">Home</a>
+                    <a href="/dashboard.html">Dashboard</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ShortLink. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/script.js"></script>
+</body>
+</html>
