@@ -169,4 +169,210 @@ async function showAnalytics(urlId) {
     currentAnalyticsId = urlId;
     
     try {
-        const response = await fetch(`
+        const response = await fetch(`/api/urls/${urlId}/analytics`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) throw new Error('Failed to load analytics');
+        
+        const data = await response.json();
+        
+        // Update stats
+        document.getElementById('detailTotalClicks').textContent = data.totalClicks;
+        document.getElementById('detailUniqueIPs').textContent = new Set(data.recentClicks.map(c => c.ip)).size;
+        document.getElementById('detailCountries').textContent = data.clicksByCountry.length;
+        
+        // Create country chart
+        const countryCtx = document.getElementById('countryChart')?.getContext('2d');
+        if (countryCtx) {
+            new Chart(countryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.clicksByCountry.map(c => c.country),
+                    datasets: [{
+                        data: data.clicksByCountry.map(c => c.count),
+                        backgroundColor: [
+                            '#6366f1',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create device chart
+        const deviceCtx = document.getElementById('deviceChart')?.getContext('2d');
+        if (deviceCtx) {
+            new Chart(deviceCtx, {
+                type: 'pie',
+                data: {
+                    labels: data.clicksByDevice.map(d => d.device),
+                    datasets: [{
+                        data: data.clicksByDevice.map(d => d.count),
+                        backgroundColor: [
+                            '#6366f1',
+                            '#10b981',
+                            '#f59e0b',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Show recent clicks
+        const recentClicks = document.getElementById('recentClicks');
+        recentClicks.innerHTML = data.recentClicks.map(click => `
+            <div class="click-item">
+                <div class="click-info">
+                    <span class="click-country">${click.country}</span>
+                    <span class="click-device">${click.device}</span>
+                    <span class="click-browser">${click.browser}</span>
+                </div>
+                <div class="click-time">${formatTime(click.timestamp)}</div>
+            </div>
+        `).join('');
+        
+        openModal('analyticsModal');
+    } catch (error) {
+        console.error('Analytics error:', error);
+        showToast('Failed to load analytics', 'error');
+    }
+}
+
+// Edit URL
+function editUrl(id, longUrl, expiresAt) {
+    currentEditId = id;
+    document.getElementById('editUrl').value = longUrl;
+    
+    if (expiresAt) {
+        document.getElementById('editExpires').value = expiresAt.slice(0, 16);
+    } else {
+        document.getElementById('editExpires').value = '';
+    }
+    
+    openModal('editModal');
+}
+
+// Save edit
+async function saveEdit() {
+    if (!currentEditId) return;
+    
+    const newUrl = document.getElementById('editUrl').value;
+    const newExpires = document.getElementById('editExpires').value;
+    
+    try {
+        const response = await fetch(`/api/urls/${currentEditId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                longUrl: newUrl,
+                expiresAt: newExpires ? new Date(newExpires).toISOString() : null
+            }),
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            showToast('URL updated successfully', 'success');
+            closeModal('editModal');
+            loadDashboard();
+        } else {
+            const data = await response.json();
+            showToast(data.error || 'Failed to update URL', 'error');
+        }
+    } catch (error) {
+        console.error('Edit error:', error);
+        showToast('Failed to update URL', 'error');
+    }
+}
+
+// Delete URL
+async function deleteUrl(id) {
+    if (!confirm('Are you sure you want to delete this link?')) return;
+    
+    try {
+        const response = await fetch(`/api/urls/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            showToast('URL deleted successfully', 'success');
+            loadDashboard();
+        } else {
+            const data = await response.json();
+            showToast(data.error || 'Failed to delete URL', 'error');
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        showToast('Failed to delete URL', 'error');
+    }
+}
+
+// Format date
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    
+    return date.toLocaleDateString();
+}
+
+// Format time
+function formatTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString();
+}
+
+// Modal functions
+function openModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+// Check auth and load dashboard
+document.addEventListener('auth-changed', (e) => {
+    if (e.detail.user) {
+        loadDashboard();
+    } else {
+        window.location.href = '/login.html';
+    }
+});
